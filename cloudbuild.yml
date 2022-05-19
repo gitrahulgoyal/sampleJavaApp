@@ -1,0 +1,24 @@
+steps:
+
+  - name: 'gcr.io/cloud-builders/mvn'
+    args: ['clean', 'package', '-DskipTests']
+
+  #build docker container
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/test-app:$COMMIT_SHA', '.']
+
+  #push container to container registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'push', 'gcr.io/$PROJECT_ID/test-app:$COMMIT_SHA']
+
+  #deploy to cloud run
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'run'
+      - '-e'
+      - 'classargs'
+      - 'a1,a2'
+      - 'gcr.io/$PROJECT_ID/test-app:$COMMIT_SHA'
+images:
+  - 'gcr.io/$PROJECT_ID/test-app:$COMMIT_SHA'
+
